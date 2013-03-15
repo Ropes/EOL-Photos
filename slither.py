@@ -22,6 +22,19 @@ STOCK_MISSION_POST_DATA = {'mission':None,
                             'table': 'images',
                             'what': 'records'}
 
+RESULT_COLUMNS = ('mission',
+                    'roll',
+                    'frame',
+                    'geon',
+                    'features',
+                    'lat',
+                    'lon',
+                    'tilt',
+                    'cldp',
+                    'date',
+                    'fclt',
+                    'image',)
+
 def post_req(url, payload):
     headers = {}
     return requests.post(url, data=payload, headers=headers)
@@ -51,6 +64,10 @@ with open('neh.html', 'r') as f:
     #all of the rows 
     images = center.findAll('tr')[1:]
     for i in images:
-        print i('td')
+        print '-----------------------------------'
+        image_columns = [ x.text for x in i('td')[1:] ]
+        print dict(zip(RESULT_COLUMNS, image_columns))
+        #for d in image_columns:
+        #    print d.text
 
 
