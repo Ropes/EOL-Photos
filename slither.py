@@ -1,5 +1,6 @@
 import requests
 from BeautifulSoup import BeautifulSoup
+from lxml import etree
 
 EOL_SITE = 'http://eol.jsc.nasa.gov'
 MISSION_RESULTS_POST_URL = 'http://eol.jsc.nasa.gov/scripts/sseop/mrf.pl'
@@ -43,10 +44,24 @@ def parse_results_page(src):
     soup = BeautifulSoup(src)
     table = soup(table)[1]
 
-    
-
 payload = STOCK_MISSION_POST_DATA
 payload.update({'mission': 'ISS031'})
+
+def parse_results(html_data):
+    print len(html_data)
+    soup = BeautifulSoup(html_data)
+    table = soup('table', {'summary': 'This table holds the body information.'})[0]
+    center = table('td', {'align': 'left'})[0]('center')[1]
+    #all of the rows 
+    images = center.findAll('tr')[1:]
+    image_data = []
+    for i in images:
+        print '-----------------------------------'
+        image_columns = [ x.text for x in i('td')[1:] ]
+        x = dict(zip(RESULT_COLUMNS, image_columns))
+        image_data.append(x)
+        print x
+    return image_data
 
 '''
 print payload
@@ -55,19 +70,14 @@ with open('neh.html', 'w') as f:
     html_data = f.write(html_data)
 '''
 
+def max_page(html_data):
+    tree = etree.HTML(html_data)
+    max_page = tree.xpath('/html/body/table[2]//tr/td[2]/table//tr/td/center[3]/b[2]')
+    print max_page[0].text
+
 with open('neh.html', 'r') as f:
     html_data = f.read()
-    print len(html_data)
-    soup = BeautifulSoup(html_data)
-    table = soup('table', {'summary': 'This table holds the body information.'})[0]
-    center = table('td', {'align': 'left'})[0]('center')[1]
-    #all of the rows 
-    images = center.findAll('tr')[1:]
-    for i in images:
-        print '-----------------------------------'
-        image_columns = [ x.text for x in i('td')[1:] ]
-        print dict(zip(RESULT_COLUMNS, image_columns))
-        #for d in image_columns:
-        #    print d.text
+    parse_results(html_data)
+    max_page(html_data)
 
 
